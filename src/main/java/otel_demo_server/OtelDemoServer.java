@@ -3,6 +3,7 @@ package otel_demo_server;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,12 +19,14 @@ public class OtelDemoServer implements ApplicationListener<ApplicationReadyEvent
     private Tracer tracer;
     static OpenTelemetry oTel;
 
+    @SneakyThrows
     @Override
     public void onApplicationEvent(final ApplicationReadyEvent event) {
         System.out.println("App ready.");
+        new MySqlDemo().run();
+        System.out.println("MySQL done.");
         start();
-        System.out.println("Done.");
-        return;
+        System.out.println("OTel Done.");
     }
 
     public void generateSpan() {
@@ -32,6 +35,7 @@ public class OtelDemoServer implements ApplicationListener<ApplicationReadyEvent
         addSpan();
         span.addEvent("Event 1");
         span.end();
+        System.out.println("sent "+span);
     }
 
     private void addSpan() {
@@ -55,7 +59,7 @@ public class OtelDemoServer implements ApplicationListener<ApplicationReadyEvent
     void start() {
         tracer = oTel.getTracer(INSTRUMENTATION_NAME);
         for (int i = 0; i < 5; i++) {
-            this.generateSpan();
+            generateSpan();
         }
 
         try {
